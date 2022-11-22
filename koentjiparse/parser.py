@@ -1,6 +1,10 @@
+from koentjiutil.cyk import *
+
+GRAMMAR_FILE = 'cfg.txt'
+
 # get -- Membuka file dengan nama filename dan men-drive proses parsing terhadap file tersebut
-def get(filename:str):
-    print(f'PLACEHOLDER {filename}')
+def get(filename:str) -> None:
+    parser = CYK(GRAMMAR_FILE)
     return
 
 # parseSyntax -- Mengembalikan 0 jika sintaks js valid, (BONUS: sebaliknya mengembalikan baris yang tidak valid)
