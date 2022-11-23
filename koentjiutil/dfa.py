@@ -70,13 +70,56 @@ if __name__ == '__main__':
     blank = ' '
 
     A = DFA()
+    """
     A.start('term')
     A.accept('termlit', 'termnum')
     A.transitions('term', (alphabet, 'termlit'), (numeric, 'termnum'), (sign, 'termsigned'))
     A.transitions('termsigned', (alphabet, 'termlit'), (numeric, 'termnum'))
     A.transitions('termlit', (alphabet, 'termlit'), (numeric, 'termlit'))
     A.transitions('termnum', (numeric, 'termnum'))
+    """
+    #Arithmetic Operations
+    def tesarit():
+        A = DFA()
+        A.start('A')
+        A.accept('B')
+        A.transitions('A', (numeric,'B'), (blank,'A'))
+        A.transitions('B', (numeric,'B'), (blank,'B'),(ops,'A'))
+        print(A._states)
+        print(A._accept)
+        #print(A._delta)
 
+        print('Input string: ', end='')
+        s = str(input())
+
+        print(f'DFA {"accepts" if A.get(s) else "rejects"}')
+
+    #Assignment
+    def assignment():
+        A = DFA()
+        A.start('q0')
+        A.accept('q4')
+        A.transitions('q0', (alphabet,'q1'))
+        A.transitions('q1', (alphabet,'q1'), (numeric,'q1'), (blank,'q2'), ('=','q3'))
+        A.transitions('q2', (numeric,'metong'),('=','q3'))
+        A.transitions('q3', (blank,'q3'), (numeric,'q4'), (alphabet,'q4'))
+        A.transitions('q4', (numeric,'q4'), (alphabet,'q4'), (blank,'q6'), (ops,'q5'))
+        A.transitions('q5', (numeric,'q4'), (blank,'q5'))
+        A.transitions('q6', (alphabet,'metong'),(ops,'q3'),(numeric,'metong'),(blank,'q6'))
+        A.transitions('metong', (alphabet,'metong'),(ops,'metong'),(numeric,'metong'),(blank,'metong'))
+
+        print(A._states)
+        print(A._accept)
+        #print(A._delta)
+
+        print('Input string: ', end='')
+        s = str(input())
+
+        print(f'DFA {"accepts" if A.get(s) else "rejects"}')
+    
+    #Variable name
+
+    '''
     print(A._states)
     print(A._accept)
     #print(A._delta)
@@ -85,3 +128,7 @@ if __name__ == '__main__':
     s = str(input())
 
     print(f'DFA {"accepts" if A.get(s) else "rejects"}')
+    '''
+
+    tesarit()
+    assignment()
