@@ -21,10 +21,10 @@ dfaCloseBracket = DFA()
 dfaCloseBracket.acceptLiteral('}')
 dfaCloseBracket.ignore(' \n')
 
-# =
-dfaEqSign = DFA()
-dfaEqSign.acceptLiteral('=')
-dfaEqSign.ignore(' \n')
+# ?
+dfaQuestion = DFA()
+dfaQuestion.acceptLiteral('?')
+dfaQuestion.ignore(' \n')
 
 # :
 dfaColon = DFA()
@@ -34,7 +34,7 @@ dfaColon.ignore(' \n')
 # ,
 dfaComma = DFA()
 dfaComma.acceptLiteral(',')
-dfaComma.ignore(' ')
+dfaComma.ignore(' \n')
 
 # DFA for operation
 dfaOpr = DFA()
@@ -59,13 +59,61 @@ dfaVar.start('A')
 dfaVar.accept('B')
 dfaVar.transitions('A', (alphabet,'B'), (blank,'A'))
 dfaVar.transitions('B', (blank,'A'))
-dfaComma.ignore(' \n')
 
 # Line terminator
 dfaLT = DFA()
-dfaLT.acceptLiteral(';')
-dfaLT.acceptLiteral('\n')
-dfaLT.ignore(' ')
+dfaLT.start('A')
+dfaLT.accept('B')
+dfaLT.transitions('A', (';\n', 'B'))
+dfaLT.transitions('B', (';\n', 'B'))
+dfaLT.kstarBefore(' ')
+dfaLT.kstarAfter(' ')
+
+# Assignment operators
+dfaASSIGN = DFA()
+dfaASSIGN.start('A')
+dfaASSIGN.accept('End')
+dfaASSIGN.transitions('A', ('=', 'End'), ('+-/%', 'B'), ('*', 'C'))
+dfaASSIGN.transitions('B', ('=', 'End'))
+dfaASSIGN.transitions('C', ('=', 'End'), ('*', 'D'))
+dfaASSIGN.transitions('D', ('=', 'End'))
+dfaASSIGN.kstarBefore(' ')
+dfaASSIGN.kstarAfter(' ')
+
+# Prefix unary operators
+dfaUNOPPRE = DFA()
+dfaUNOPPRE.acceptLiteral('++')
+dfaUNOPPRE.acceptLiteral('--')
+dfaUNOPPRE.acceptLiteral('!')
+dfaUNOPPRE.acceptLiteral('~')
+dfaUNOPPRE.kstarBefore(' ')
+dfaUNOPPRE.kstarAfter(' ')
+
+# Postfix unary operators
+dfaUNOPPOS = DFA()
+dfaUNOPPOS.acceptLiteral('++')
+dfaUNOPPOS.acceptLiteral('--')
+dfaUNOPPOS.kstarBefore(' ')
+dfaUNOPPOS.kstarAfter(' ')
+
+# Binary operators
+dfaBINOP = DFA()
+dfaBINOP.start('A')
+dfaBINOP.accept('End', 'C', 'E', 'Fa', 'Fb', 'Fbb', 'G', 'H')
+dfaBINOP.transitions('A', ('+-/%^', 'End'), ('*', 'C'))
+dfaBINOP.transitions('A', ('=!', 'D'), ('<', 'Fa'), ('>', 'Fb'), ('&', 'G'), ('|', 'H'))
+dfaBINOP.transitions('C', ('*', 'End'))
+dfaBINOP.transitions('D', ('=', 'E'))
+dfaBINOP.transitions('E', ('=', 'End'))
+dfaBINOP.transitions('Fa', ('=<', 'End'))
+dfaBINOP.transitions('Fb', ('=', 'End'), ('>', 'Fbb'))
+dfaBINOP.transitions('Fbb', ('>', 'End'))
+dfaBINOP.transitions('G', ('&', 'End'))
+dfaBINOP.transitions('H', ('|', 'End'))
+dfaBINOP.acceptLiteral('typeof')
+dfaBINOP.acceptLiteral('instanceof')
+dfaBINOP.kstarBefore(' ')
+dfaBINOP.kstarAfter(' ')
 
 # IF
 dfaIF = DFA()
@@ -126,6 +174,7 @@ dfaSWITCH.acceptLiteral('switch')
 # CASE
 dfaCASE = DFA()
 dfaCASE.acceptLiteral('case')
+dfaCASE.kplusAfter(' ')
 
 # DEFAULT
 dfaDEFAULT = DFA()
@@ -145,28 +194,37 @@ dfaFINALLY.acceptLiteral('finally')
 
 # FUNCTION
 dfaFUNCTION = DFA()
-dfaFUNCTION.acceptLiteral('function ')
+dfaFUNCTION.acceptLiteral('function')
+dfaFUNCTION.kplusAfter(' ')
 
 # RETURN
 dfaRETURN = DFA()
 dfaRETURN.acceptLiteral('return')
-dfaRETURN.kstarAfter(' ')
+
+# RETURNVAL
+dfaRETURNVAL = DFA()
+dfaRETURNVAL.acceptLiteral('return')
+dfaRETURNVAL.kplusAfter(' ')
 
 # THROW
 dfaTHROW = DFA()
-dfaTHROW.acceptLiteral('throw ')
+dfaTHROW.acceptLiteral('throw')
+dfaTHROW.kplusAfter(' ')
 
 # VAR
 dfaVAR = DFA()
-dfaVAR.acceptLiteral('var ')
+dfaVAR.acceptLiteral('var')
+dfaVAR.kplusAfter(' ')
 
 # LET
 dfaLET = DFA()
-dfaLET.acceptLiteral('let ')
+dfaLET.acceptLiteral('let')
+dfaLET.kplusAfter(' ')
 
 # CONST
 dfaCONST = DFA()
-dfaCONST.acceptLiteral('const ')
+dfaCONST.acceptLiteral('const')
+dfaCONST.kplusAfter(' ')
 
 # ID
 dfaID = DFA()
@@ -202,6 +260,7 @@ EXPRESSIONS = {
     'FINALLY': dfaFINALLY,
     'FUNCTION': dfaFUNCTION,
     'RETURN': dfaRETURN,
+    'RETURNVAL': dfaRETURNVAL,
     'THROW': dfaTHROW,
     'VAR': dfaVAR,
     'LET': dfaLET,
@@ -210,13 +269,16 @@ EXPRESSIONS = {
     'NUM': dfaNUM,
     'STR': dfaSTR,
     'ARR': dfaARR,
-    'OP': None,
     '(': dfaOpenPar,
     ')': dfaClosePar,
     '{': dfaOpenBracket,
     '}': dfaCloseBracket,
-    '=': dfaEqSign,
+    '?': dfaQuestion,
     ':': dfaColon,
     ',': dfaComma,
-    'LT': dfaLT
+    'LT': dfaLT,
+    'ASSIGN_OP': dfaASSIGN,
+    'UN_OP_PRE': dfaUNOPPRE,
+    'UN_OP_POS': dfaUNOPPOS,
+    'BIN_OP': dfaBINOP
 }

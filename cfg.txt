@@ -1,4 +1,5 @@
 S -> UNBRACED_BLOCK
+S -> LT UNBRACED_BLOCK
 
 # Keywords and operators
 IF -> 'IF'
@@ -17,6 +18,7 @@ CATCH -> 'CATCH'
 FINALLY -> 'CATCH'
 FUNCTION -> 'FUNCTION'
 RETURN -> 'RETURN'
+RETURNVAL -> 'RETURNVAL'
 THROW -> 'THROW'
 VAR -> 'VAR'
 LET -> 'LET'
@@ -25,23 +27,36 @@ ID -> 'ID'
 NUM -> 'NUM'
 STR -> 'STR'
 ARR -> 'ARR'
-OP -> 'OP'
 ( -> '('
 ) -> ')'
 { -> '{'
 } -> '}'
-= -> '='
+? -> '?'
 : -> ':'
 , -> ','
 LT -> 'LT'
+ASSIGN_OP -> 'ASSIGN_OP'
+UN_OP_PRE -> 'UN_OP_PRE'
+UN_OP_POS -> 'UN_OP_POS'
+BIN_OP -> 'BIN_OP'
 
-ANY -> ID
-ANY -> NUM
-ANY -> STR
-ANY -> ARR
-ANY -> OP
+VALUE -> ID
+VALUE -> NUM
+VALUE -> STR
+VALUE -> ARR
+VALUE -> FUNC_CALL
 
-ASSIGN -> ID = OP
+ASSIGN -> ID ASSIGN_OP OP
+FUNC_CALL -> ID FUNC_ARGS
+
+# Operations
+OP -> VALUE
+OP -> ASSIGN
+OP -> UN_OP_PRE OP
+OP -> OP UN_OP_POS
+OP -> OP BIN_OP OP
+OP -> OP ? OP : OP
+OP -> OP_PARENTHESES
 
 # Expressions
 EXPR -> OP LT
@@ -55,7 +70,7 @@ EXPR -> BRACES
 EXPR -> B_DECLARE
 EXPR -> B_THROW
 EXPR -> RETURN LT
-EXPR -> RETURN ANY LT
+EXPR -> RETURNVAL OP LT
 
 LOOP_EXPR -> EXPR
 LOOP_EXPR -> LOOP_B_IF
@@ -135,4 +150,4 @@ B_DECLARE -> CONST ID LT
 B_DECLARE -> CONST ASSIGN LT
 
 # Throw statements
-B_THROW -> THROW ANY LT
+B_THROW -> THROW OP LT
