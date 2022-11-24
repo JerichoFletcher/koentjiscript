@@ -13,10 +13,12 @@ def get(filename:str) -> None:
         INPUT_LINES = file.readlines()
     INPUT_RAW = ''.join(INPUT_LINES)
     
-    errline, valid = cyk.parse(INPUT_RAW)
+    errline = cyk.parse(INPUT_RAW)
     if errline == 0:
+        # Teks valid
         pass
     else:
+        # Teks tidak valid
         handleError(errline)
 
 # handleError -- Menghandle error

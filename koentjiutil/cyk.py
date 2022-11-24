@@ -7,11 +7,11 @@ class CYK:
     def __init__(self, grammar:str) -> None:
         self._cfg = CFG('S', grammar)
 
-    # parse -- Menerima ??? dan mengembalikan ???
-    def parse(self, inp:str) -> tuple[int, bool]:
+    # parse -- Menerima input teks raw dan mengembalikan 0 jika teks valid, sebaliknya mengembalikan baris yang error
+    def parse(self, inp:str) -> int:
         errline, terms = exprConvert(inp)
         if errline == 0:
             # Proses di sini
-            return 0, True
+            return 0
         else:
-            return errline, False
+            return errline
