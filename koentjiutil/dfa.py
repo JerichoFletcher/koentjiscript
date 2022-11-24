@@ -60,6 +60,31 @@ class DFA:
     # ignore -- Menandai semua karakter yang diberikan sebagai karakter yang diabaikan
     def ignore(self, chars:str):
         self._ignore = chars
+    
+    # kstarBefore -- Menambahkan semua karakter yang diberikan sebagai Kleene star di awal DFA
+    def kstarBefore(self, chars:str):
+        self.transition(self._start, chars, self._start)
+
+    # kplusBefore -- Menambahkan semua karakter yang diberikan sebagai Kleene plus di awal DFA
+    def kplusBefore(self, chars:str):
+        self.transition(self._start, chars, self._start)
+        new_start = f'{chars}+before:{self._start}'
+        self.transition(new_start, chars, self._start)
+        self._start = new_start
+    
+    # kstarAfter -- Menambahkan semua karakter yang diberikan sebagai Kleene star di akhir DFA
+    def kstarAfter(self, chars:str):
+        for s in self._accept:
+            self.transition(s, chars, s)
+
+    # kplusAfter -- Menambahkan semua karakter yang diberikan sebagai Kleene plus di akhir DFA
+    def kplusAfter(self, chars:str):
+        for i in range(len(self._accept)):
+            s = self._accept[i]
+            new_accept = f'{chars}+after{i}:{s}'
+            self.transition(s, chars, new_accept)
+            self.transition(new_accept, chars, new_accept)
+            self._accept[i] = new_accept
 
     # start -- Menandai state sebagai starting state
     def start(self, state:str):
