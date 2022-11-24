@@ -18,12 +18,14 @@ FINALLY -> 'CATCH'
 FUNCTION -> 'FUNCTION'
 RETURN -> 'RETURN'
 THROW -> 'THROW'
+VAR -> 'VAR'
+LET -> 'LET'
+CONST -> 'CONST'
 ID -> 'ID'
 NUM -> 'NUM'
 STR -> 'STR'
 ARR -> 'ARR'
 OP -> 'OP'
-ASSIGN -> 'ASSIGN'
 ( -> '('
 ) -> ')'
 { -> '{'
@@ -38,6 +40,8 @@ ANY -> NUM
 ANY -> STR
 ANY -> ARR
 ANY -> OP
+
+ASSIGN -> ID = OP
 
 # Expressions
 EXPR -> OP LT
