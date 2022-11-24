@@ -59,7 +59,6 @@ class DFA:
             self.state(s)
             if s not in self._accept: self._accept.append(s)
 
-
 # TESTING
 if __name__ == '__main__':
     alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)]
