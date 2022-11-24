@@ -1,16 +1,39 @@
 from koentjiutil.dfa import *
 
-# DFAs
+## DFAs
+## 
+## Characters
 # (
 dfaOpenPar = DFA()
-dfaOpenPar.start('A')
-dfaOpenPar.accept('B')
-dfaOpenPar.transitions('A', ('(', 'B'))
+dfaOpenPar.acceptLiteral('(')
 dfaOpenPar.ignore(' ')
 
 # )
 dfaClosePar = DFA()
-dfaClosePar.start('A')
-dfaClosePar.accept('B')
-dfaClosePar.transitions('A', (')', 'B'))
+dfaClosePar.acceptLiteral(')')
 dfaClosePar.ignore(' ')
+
+# {
+dfaOpenBracket = DFA()
+dfaOpenBracket.acceptLiteral('{')
+dfaOpenBracket.ignore(' ')
+
+# }
+dfaCloseBracket = DFA()
+dfaCloseBracket.acceptLiteral('}')
+dfaCloseBracket.ignore(' ')
+
+# =
+dfaEqSign = DFA()
+dfaEqSign.acceptLiteral('=')
+dfaEqSign.ignore(' ')
+
+# :
+dfaColon = DFA()
+dfaColon.acceptLiteral(':')
+dfaColon.ignore(' ')
+
+# ,
+dfaComma = DFA()
+dfaComma.acceptLiteral(',')
+dfaComma.ignore(' ')

@@ -16,7 +16,7 @@ class DFA:
         self.currentState = self._start
         for c in inp:
             if c in self._ignore: continue
-            if c not in self._delta[x]: return False
+            if x not in self._delta.keys() or c not in self._delta[x]: return False
             x = self._delta[x][c]
         return x in self._accept
 
@@ -44,6 +44,18 @@ class DFA:
     def transitions(self, stateFrom:str, *pairs:Tuple[str,str]):
         for inp, stateTo in pairs:
             self.transition(stateFrom, inp, stateTo)
+
+    # acceptLiteral -- Menambahkan state dan transisi untuk menerima suatu literal
+    def acceptLiteral(self, literal:str):
+        i = 0
+        for ch in literal:
+            if i == 0 and self._start is None: self._start = f'{literal}{i}'
+            new_state_from = f'{literal}{i}' if i > 0 else self._start
+            new_state_to = f'{literal}{i+1}'
+            self.transition(new_state_from, ch, new_state_to)
+            i += 1
+        if i > 0:
+            self.accept(f'{literal}{i}')
 
     # ignore -- Menandai semua karakter yang diberikan sebagai karakter yang diabaikan
     def ignore(self, chars:str):
@@ -116,6 +128,19 @@ if __name__ == '__main__':
 
         print(f'DFA {"accepts" if A.get(s) else "rejects"}')
     
+    #Literal continue
+    def tesliteral():
+        A = DFA()
+        A.acceptLiteral('continue')
+
+        print(A._states)
+        print(A._accept)
+
+        print('Input string: ', end='')
+        s = str(input())
+
+        print(f'DFA {"accepts" if A.get(s) else "rejects"}')
+    
     #Variable name
 
     '''
@@ -131,3 +156,4 @@ if __name__ == '__main__':
 
     tesarit()
     assignment()
+    tesliteral()
