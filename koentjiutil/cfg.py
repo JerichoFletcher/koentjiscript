@@ -3,8 +3,9 @@ from koentjiutil.util_dict import *
 # Class CFG
 class CFG:
     # Konstruktor
-    def __init__(self, grammar:str) -> None:
+    def __init__(self, start:str, grammar:str) -> None:
         self._productions = {}
+        self._start = start
         self.load(grammar)
         self.toCNF()
     
