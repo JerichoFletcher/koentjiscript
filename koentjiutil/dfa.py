@@ -76,9 +76,10 @@ if __name__ == '__main__':
     alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)]
     alphabet.append([chr(C) for C in range(ord('A'), ord('Z')+1)])
     numeric = [chr(c) for c in range(ord('0'), ord('9')+1)]
-    sign = '+-'
+    sign = '+-' 
     ops = '+-*/'
     blank = ' '
+
 
     A = DFA()
     """
@@ -153,7 +154,27 @@ if __name__ == '__main__':
 
     print(f'DFA {"accepts" if A.get(s) else "rejects"}')
     '''
-
-    tesarit()
-    assignment()
-    tesliteral()
+    dfaOpr = DFA()
+    dfaOpr.start('q0')
+    dfaOpr.accept('q1','q2','q7','q8')
+    dfaOpr.transitions('q0', (alphabet,'q1'),(blank,'q0'),(numeric,'q2'))
+    dfaOpr.transitions('q1', (alphabet,'q1'), (numeric,'q1'), (ops,'q3'), (blank,'q4'), ('=!', 'q5'),('><','q9'))
+    dfaOpr.transitions('q2', (numeric,'q2'), (ops,'q3'), (blank,'q4'), ('=!','q5'), ('><','q9'))
+    dfaOpr.transitions('q3', (alphabet,'q1'), (numeric,'q2'), (blank,'q3'))
+    dfaOpr.transitions('q4', (blank,'q4'),('=!','q5') ,('><','q9'))
+    dfaOpr.transitions('q5', ('=', 'q6'), (blank,'q5'))
+    dfaOpr.transitions('q6', (alphabet,'q7'), (numeric,'q8'),(blank,'q6'))
+    dfaOpr.transitions('q7', (alphabet,'q7'), (numeric,'q7'),(ops,'q11'), (blank,'q12'))
+    dfaOpr.transitions('q8', (numeric,'q8'),(ops,'q11'),(blank,'q12'))
+    dfaOpr.transitions('q9', ('=', 'q10'), (alphabet,'q7'), (numeric,'q8'), (blank,'q9'))
+    dfaOpr.transitions('q10', (blank,'q10'), (alphabet,'q7'), (numeric,'q8'))
+    dfaOpr.transitions('q11', (blank,'q11'), (alphabet,'q7'), (numeric,'q8'))
+    dfaOpr.transitions('q12', (blank,'q12'), (ops,'q11'))
+    print(dfaOpr._states)
+    print(dfaOpr._accept)
+    print('Input string: ', end='')
+    s = str(input())
+    print(f'DFA {"accepts" if dfaOpr.get(s) else "rejects"}')
+    #tesarit()
+    #assignment()
+    #tesliteral()
