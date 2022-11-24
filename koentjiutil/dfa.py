@@ -1,24 +1,57 @@
 # Class DFA
-from typing import Tuple
-
 class DFA:
     # Konstruktor
     def __init__(self):
-        self._states = []
-        self._accept = []
-        self._delta = {}
-        self._start = None
-        self._ignore = ''
+        self._states:list[str] = []
+        self._accept:list[str] = []
+        self._delta:dict[str,dict[str,str]] = {}
+        self._start:str = None
+        self._ignore:str = ''
+        self.currentState:str = None
 
     # get -- Menerima input string dan mengembalikan True jika string diterima oleh DFA, sebaliknya False
     def get(self, inp:str) -> bool:
-        x = self._start
-        self.currentState = self._start
+        self.begin()
         for c in inp:
-            if c in self._ignore: continue
-            if x not in self._delta.keys() or c not in self._delta[x]: return False
-            x = self._delta[x][c]
-        return x in self._accept
+            if c not in self._ignore:
+                if self.currentState not in self._delta.keys() or c not in self._delta[self.currentState]:
+                    self.reset()
+                    return False
+                if c in self._delta[self.currentState].keys():
+                    self.currentState = self._delta[self.currentState][c]
+                else:
+                    self.reset()
+                    return False
+        return self.isAccepted()
+    
+    # step -- Menerima input satu karakter
+    def step(self, ch:str):
+        if len(ch) != 1: raise ValueError(f'Invalid input {ch}: hanya bisa menerima input satu karakter')
+        if not self.isActive(): raise RuntimeError('DFA belum dimulai')
+        if ch not in self._ignore:
+            if self.currentState not in self._delta.keys() or ch not in self._delta[self.currentState]:
+                self.reset()
+                return
+            if ch in self._delta[self.currentState].keys():
+                self.currentState = self._delta[self.currentState][ch]
+            else:
+                self.reset()
+    
+    # begin -- Memulai DFA
+    def begin(self):
+        self.currentState = self._start
+
+    # reset -- Mereset DFA
+    def reset(self):
+        self.currentState = None
+    
+    # isActive -- Mengembalikan True jika DFA aktif, False sebaliknya
+    def isActive(self) -> bool:
+        return self.currentState != None
+
+    # isAccepted -- Mengembalikan True jika DFA menerima input, False sebaliknya
+    def isAccepted(self) -> bool:
+        return self.currentState in self._accept
 
     # state -- Menambahkan state baru ke DFA
     def state(self, name:str):
@@ -41,7 +74,7 @@ class DFA:
         self.state(stateTo)
 
     # transitions -- Menambahkan banyak fungsi transisi baru dari satu state ke DFA
-    def transitions(self, stateFrom:str, *pairs:Tuple[str,str]):
+    def transitions(self, stateFrom:str, *pairs:tuple[str,str]):
         for inp, stateTo in pairs:
             self.transition(stateFrom, inp, stateTo)
 
@@ -98,8 +131,7 @@ class DFA:
 
 # TESTING
 if __name__ == '__main__':
-    alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)]
-    alphabet.append([chr(C) for C in range(ord('A'), ord('Z')+1)])
+    alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)] + [chr(C) for C in range(ord('A'), ord('Z')+1)]
     numeric = [chr(c) for c in range(ord('0'), ord('9')+1)]
     sign = '+-' 
     ops = '+-*/'

@@ -1,40 +1,46 @@
 from koentjiutil.dfa import *
 
+alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)] + [chr(C) for C in range(ord('A'), ord('Z')+1)]
+numeric = [chr(c) for c in range(ord('0'), ord('9')+1)]
+sign = '+-' 
+ops = '+-*/'
+blank = ' '
+
 ## DFAs
 # (
 dfaOpenPar = DFA()
 dfaOpenPar.acceptLiteral('(')
-dfaOpenPar.ignore(' \n')
+dfaOpenPar.ignore(' ')
 
 # )
 dfaClosePar = DFA()
 dfaClosePar.acceptLiteral(')')
-dfaClosePar.ignore(' \n')
+dfaClosePar.ignore(' ')
 
 # {
 dfaOpenBracket = DFA()
 dfaOpenBracket.acceptLiteral('{')
-dfaOpenBracket.ignore(' \n')
+dfaOpenBracket.ignore(' ')
 
 # }
 dfaCloseBracket = DFA()
 dfaCloseBracket.acceptLiteral('}')
-dfaCloseBracket.ignore(' \n')
+dfaCloseBracket.ignore(' ')
 
 # ?
 dfaQuestion = DFA()
 dfaQuestion.acceptLiteral('?')
-dfaQuestion.ignore(' \n')
+dfaQuestion.ignore(' ')
 
 # :
 dfaColon = DFA()
 dfaColon.acceptLiteral(':')
-dfaColon.ignore(' \n')
+dfaColon.ignore(' ')
 
 # ,
 dfaComma = DFA()
 dfaComma.acceptLiteral(',')
-dfaComma.ignore(' \n')
+dfaComma.ignore(' ')
 
 # DFA for operation
 dfaOpr = DFA()
@@ -53,12 +59,6 @@ dfaOpr.transitions('q9', ('=', 'q10'), (alphabet,'q7'), (numeric,'q8'), (blank,'
 dfaOpr.transitions('q10', (blank,'q10'), (alphabet,'q7'), (numeric,'q8'))
 dfaOpr.transitions('q11', (blank,'q11'), (alphabet,'q7'), (numeric,'q8'))
 dfaOpr.transitions('q12', (blank,'q12'), (ops,'q11'))
-
-dfaVar = DFA()
-dfaVar.start('A')
-dfaVar.accept('B')
-dfaVar.transitions('A', (alphabet,'B'), (blank,'A'))
-dfaVar.transitions('B', (blank,'A'))
 
 # Line terminator
 dfaLT = DFA()
@@ -110,8 +110,6 @@ dfaBINOP.transitions('Fb', ('=', 'End'), ('>', 'Fbb'))
 dfaBINOP.transitions('Fbb', ('>', 'End'))
 dfaBINOP.transitions('G', ('&', 'End'))
 dfaBINOP.transitions('H', ('|', 'End'))
-dfaBINOP.acceptLiteral('typeof')
-dfaBINOP.acceptLiteral('instanceof')
 dfaBINOP.kstarBefore(' ')
 dfaBINOP.kstarAfter(' ')
 
@@ -228,7 +226,11 @@ dfaCONST.kplusAfter(' ')
 
 # ID
 dfaID = DFA()
-dfaID.acceptLiteral('id')
+dfaID.start('A')
+dfaID.accept('B')
+dfaID.transitions('A', (alphabet, 'B'))
+dfaID.transitions('B', (alphabet + numeric + ['.', '_'], 'B'))
+dfaID.kstarBefore(' ')
 
 # NUM
 dfaNUM = DFA()
@@ -241,7 +243,6 @@ dfaSTR.acceptLiteral('str')
 # ARR
 dfaARR = DFA()
 dfaSTR.acceptLiteral('arr')
-dfaComma.ignore(' \n')
 
 EXPRESSIONS = {
     'IF': dfaIF,
@@ -282,3 +283,59 @@ EXPRESSIONS = {
     'UN_OP_POS': dfaUNOPPOS,
     'BIN_OP': dfaBINOP
 }
+
+class Node:
+    # Konstruktor
+    def __init__(self, term:str, line:int) -> None:
+        self._term = term
+        self._line = line
+    
+    def __repr__(self) -> str:
+        return f'{self._line}:{self._term}'
+
+# exprConvert -- Mengubah string menjadi list[Node]
+def exprConvert(inp:str) -> tuple[int, list]:
+    result:list[Node] = []
+    line = 1
+
+    def resetAll():
+        for dfa in EXPRESSIONS.values(): dfa.begin()
+    resetAll()
+
+    def process(ch, l):
+        line = l
+        active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+        accept = [(key, dfa) for key, dfa in active if dfa.isAccepted()]
+        #activeKeys = [key for key, _ in active]
+        #print(f'{ch}: {activeKeys}')
+        if len(active) == 0:
+            # Syntax error
+            return True, line
+        elif len(accept) == 1:
+            # Sisa 1 DFA aktif, convert
+            key, dfa = accept[0]
+            for _, dfa in active:
+                dfa.step(ch)
+
+            active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+            if not dfa.isActive() and len(active) == 0:
+                #print(f'Adding {key} to result')
+                node = Node(key, line)
+                result.append(node)
+
+                resetAll()
+                active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+                for _, dfa in active: dfa.step(ch)
+        else:
+            # Sisa banyak DFA aktif, langkah
+            for _, dfa in active:
+                dfa.step(ch)
+        if ch == '\n': line += 1
+        return False, line
+
+    for ch in inp:
+        err, line = process(ch, line)
+        if err: break
+    if not err: err, line = process(inp[len(inp)-1], line)
+    
+    return 0 if not err else line, result

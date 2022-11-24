@@ -1,17 +1,30 @@
 from koentjiutil.cyk import *
 
 GRAMMAR_FILE = 'cfg.txt'
-INPUT_FILE = ''
-RESULT = 0
+INPUT_LINES = []
+INPUT_RAW = ''
 
 # get -- Membuka file dengan nama filename dan men-drive proses parsing terhadap file tersebut
 def get(filename:str) -> None:
-    parser = CYK(GRAMMAR_FILE)
+    global GRAMMAR_FILE, INPUT_LINES, INPUT_RAW
+
+    cyk = CYK(GRAMMAR_FILE)
     with open(filename) as file:
-        lines = file.readlines()
-    INPUT_FILE = ''.join(lines)
+        INPUT_LINES = file.readlines()
+    INPUT_RAW = ''.join(INPUT_LINES)
     
-    RESULT = parser.parse(INPUT_FILE)
+    errline, valid = cyk.parse(INPUT_RAW)
+    if errline == 0:
+        pass
+    else:
+        handleError(errline)
+
+# handleError -- Menghandle error
+def handleError(line:int):
+    global INPUT_LINES
+
+    print(f'Syntax error on line {line}: ')
+    print(INPUT_LINES[line-1])
 
 ## parseSyntax -- Mengembalikan 0 jika sintaks js valid, (BONUS: sebaliknya mengembalikan baris yang tidak valid)
 #def parseSyntax(f) -> int:

@@ -1,2 +1,8 @@
-let bil1 = 0
-let bil2 = 12.5
+let bil1 = ukn
+let bil2 = bil1
+
+function dosomething(x,y){
+    return x + y
+}
+
+console.log(dosomething(bil1,bil2))
