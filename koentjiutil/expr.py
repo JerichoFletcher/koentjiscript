@@ -1,42 +1,46 @@
 from koentjiutil.dfa import *
 
 ## DFAs
-## 
-## Characters
 # (
 dfaOpenPar = DFA()
 dfaOpenPar.acceptLiteral('(')
-dfaOpenPar.ignore(' ')
+dfaOpenPar.ignore(' \n')
 
 # )
 dfaClosePar = DFA()
 dfaClosePar.acceptLiteral(')')
-dfaClosePar.ignore(' ')
+dfaClosePar.ignore(' \n')
 
 # {
 dfaOpenBracket = DFA()
 dfaOpenBracket.acceptLiteral('{')
-dfaOpenBracket.ignore(' ')
+dfaOpenBracket.ignore(' \n')
 
 # }
 dfaCloseBracket = DFA()
 dfaCloseBracket.acceptLiteral('}')
-dfaCloseBracket.ignore(' ')
+dfaCloseBracket.ignore(' \n')
 
 # =
 dfaEqSign = DFA()
 dfaEqSign.acceptLiteral('=')
-dfaEqSign.ignore(' ')
+dfaEqSign.ignore(' \n')
 
 # :
 dfaColon = DFA()
 dfaColon.acceptLiteral(':')
-dfaColon.ignore(' ')
+dfaColon.ignore(' \n')
 
 # ,
 dfaComma = DFA()
 dfaComma.acceptLiteral(',')
-dfaComma.ignore(' ')
+dfaComma.ignore(' \n')
+
+# Line terminator
+dfaLT = DFA()
+dfaLT.acceptLiteral(';')
+dfaLT.acceptLiteral('\n')
+dfaLT.ignore(' ')
 
 # IF
 dfaIF = DFA()
@@ -148,3 +152,40 @@ dfaSTR.acceptLiteral('str')
 # ARR
 dfaARR = DFA()
 dfaSTR.acceptLiteral('arr')
+dfaComma.ignore(' \n')
+
+EXPRESSIONS = {
+    'IF': dfaIF,
+    'ELSE': dfaELSE,
+    'FOR': dfaFOR,
+    'WHILE': dfaWHILE,
+    'BREAK': dfaBREAK,
+    'CONTINUE': dfaCONTINUE,
+    'IN': dfaIN,
+    'OF': dfaOF,
+    'SWITCH': dfaSWITCH,
+    'CASE': dfaCASE,
+    'DEFAULT': dfaDEFAULT,
+    'TRY': dfaTRY,
+    'CATCH': dfaCATCH,
+    'FINALLY': dfaFINALLY,
+    'FUNCTION': dfaFUNCTION,
+    'RETURN': dfaRETURN,
+    'THROW': dfaTHROW,
+    'VAR': dfaVAR,
+    'LET': dfaLET,
+    'CONST': dfaCONST,
+    'ID': dfaID,
+    'NUM': dfaNUM,
+    'STR': dfaSTR,
+    'ARR': dfaARR,
+    'OP': None,
+    '(': dfaOpenPar,
+    ')': dfaClosePar,
+    '{': dfaOpenBracket,
+    '}': dfaCloseBracket,
+    '=': dfaEqSign,
+    ':': dfaColon,
+    ',': dfaComma,
+    'LT': dfaLT
+}
