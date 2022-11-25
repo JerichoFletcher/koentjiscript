@@ -95,14 +95,20 @@ class CFG:
         # Handle unit production
         while len(unit) > 0:
             key, val = unit.pop()
-            if val[0] in result.keys():
+            #print(f'Next processing: {key} -> {val}')
+            if val[0] in result.keys() and val[0] not in [key for key, _ in unit]:
                 for ext_prod in result[val[0]]:
                     if len(ext_prod) == 1 and ext_prod[0][0] != "'":
                         # Production ini juga unit production, tambahkan ke queue
+                        #print(f'  Queueing {prod[0]} -> {ext_prod}')
                         unit.append((prod[0], ext_prod))
                     else:
                         # Production ini bukan unit production, simpan
+                        #print(f'  Adding {key} -> {ext_prod}')
                         dict_add_nondup(result, key, ext_prod)
+            else:
+                #print(f'  Processing later')
+                unit.insert(0, (key, val))
         
         # Simpan hasil sebagai production rule yang baru
         self._productions.clear()

@@ -136,26 +136,48 @@ dfaBINOP.kstarAfter(' ')
 # IF
 dfaIF = DFA()
 dfaIF.acceptLiteral('if')
+dfaIF.kstarBefore(' ')
+dfaIF.kstarAfter(' ')
 
 # ELSE
 dfaELSE = DFA()
 dfaELSE.acceptLiteral('else')
+dfaELSE.kstarBefore(' ')
+dfaELSE.kstarAfter(' ')
+
+# ELSEIF
+dfaELSEIF = DFA()
+dfaELSEIF.acceptLiteral('else ')
+dfaELSEIF.kstarBefore(' ')
+dfaELSEIF.transitions('else 5', ('i', 'I'), (' \n', 'else 5'))
+dfaELSEIF.transitions('I', ('f', 'F'))
+dfaELSEIF._accept.clear()
+dfaELSEIF.accept('F')
+dfaELSEIF.kstarAfter(' ')
 
 # FOR
 dfaFOR = DFA()
 dfaFOR.acceptLiteral('for')
+dfaFOR.kstarBefore(' ')
+dfaFOR.kstarAfter(' ')
 
 # WHILE
 dfaWHILE  = DFA()
 dfaWHILE.acceptLiteral('while')
+dfaWHILE.kstarBefore(' ')
+dfaWHILE.kstarAfter(' ')
 
 # BREAK
 dfaBREAK = DFA()
 dfaBREAK.acceptLiteral('break')
+dfaBREAK.kstarBefore(' ')
+dfaBREAK.kstarAfter(' ')
 
 # CONTINUE
 dfaCONTINUE = DFA()
 dfaCONTINUE.acceptLiteral('continue')
+dfaCONTINUE.kstarBefore(' ')
+dfaCONTINUE.kstarAfter(' ')
 
 # IN
 dfaIN = DFA()
@@ -188,60 +210,79 @@ dfaOF.kplusAfter(' ')
 # SWITCH
 dfaSWITCH = DFA()
 dfaSWITCH.acceptLiteral('switch')
+dfaSWITCH.kstarBefore(' ')
+dfaSWITCH.kstarAfter(' ')
 
 # CASE
 dfaCASE = DFA()
 dfaCASE.acceptLiteral('case')
+dfaCASE.kstarBefore(' ')
 dfaCASE.kplusAfter(' ')
 
 # DEFAULT
 dfaDEFAULT = DFA()
 dfaDEFAULT.acceptLiteral('default')
+dfaDEFAULT.kstarBefore(' ')
+dfaDEFAULT.kstarAfter(' ')
 
 # TRY
 dfaTRY = DFA()
 dfaTRY.acceptLiteral('try')
+dfaTRY.kstarBefore(' ')
+dfaTRY.kstarAfter(' ')
 
 # CATCH
 dfaCATCH = DFA()
 dfaCATCH.acceptLiteral('catch')
+dfaCATCH.kstarBefore(' ')
+dfaCATCH.kstarAfter(' ')
 
 # FINALLY
 dfaFINALLY = DFA()
 dfaFINALLY.acceptLiteral('finally')
+dfaFINALLY.kstarBefore(' ')
+dfaFINALLY.kstarAfter(' ')
 
 # FUNCTION
 dfaFUNCTION = DFA()
 dfaFUNCTION.acceptLiteral('function')
+dfaFUNCTION.kstarBefore(' ')
 dfaFUNCTION.kplusAfter(' ')
 
 # RETURN
 dfaRETURN = DFA()
 dfaRETURN.acceptLiteral('return')
+dfaRETURN.kstarBefore(' ')
+dfaRETURN.kstarAfter(' ')
 
 # RETURNVAL
 dfaRETURNVAL = DFA()
 dfaRETURNVAL.acceptLiteral('return')
+dfaRETURNVAL.kstarBefore(' ')
 dfaRETURNVAL.kplusAfter(' ')
 
 # THROW
 dfaTHROW = DFA()
 dfaTHROW.acceptLiteral('throw')
+dfaTHROW.kstarBefore(' ')
 dfaTHROW.kplusAfter(' ')
 
 # VAR
 dfaVAR = DFA()
 dfaVAR.acceptLiteral('var')
+dfaVAR.kstarBefore(' ')
 dfaVAR.kplusAfter(' ')
 
 # LET
 dfaLET = DFA()
 dfaLET.acceptLiteral('let')
+dfaLET.kstarBefore(' ')
 dfaLET.kplusAfter(' ')
 
 # CONST
 dfaCONST = DFA()
 dfaCONST.acceptLiteral('const')
+dfaCONST.kstarBefore(' ')
 dfaCONST.kplusAfter(' ')
 
 # ID
@@ -251,6 +292,7 @@ dfaID.accept('B')
 dfaID.transitions('A', (alphabet, 'B'))
 dfaID.transitions('B', (alphabet + numeric + '._', 'B'))
 dfaID.kstarBefore(' ')
+dfaID.kstarAfter(' ')
 
 # NUM
 dfaNUM = DFA()
@@ -260,18 +302,21 @@ dfaNUM.transitions('A', (numeric, 'B'), ('.', 'C'))
 dfaNUM.transitions('B', (numeric, 'B'), ('.', 'C'))
 dfaNUM.transitions('C', (numeric, 'C'))
 dfaNUM.kstarBefore(' ')
+dfaNUM.kstarAfter(' ')
 
 # STR
 dfaSTR = DFA()
 dfaSTR.start('A')
-dfaSTR.start('End')
+dfaSTR.accept('End')
 dfaSTR.transitions('A', ("'", 'Single'), ('"', 'Double'))
 dfaSTR.transitions('Single', (any_nosinglequote, 'Single'), ("'", 'End'))
 dfaSTR.transitions('Double', (any_nodoublequote, 'Double'), ('"', 'End'))
 dfaSTR.kstarBefore(' ')
+dfaSTR.kstarAfter(' ')
 
 EXPRESSIONS = {
     "'IF'": dfaIF,
+    "'ELSEIF'": dfaELSEIF,
     "'ELSE'": dfaELSE,
     "'FOR'": dfaFOR,
     "'WHILE'": dfaWHILE,
@@ -312,6 +357,8 @@ EXPRESSIONS = {
     "'BIN_OP'": dfaBINOP
 }
 
+NON_KEYWORDS = ["'ID'", "'NUM'", "'STR'"]
+
 class Node:
     # Konstruktor
     def __init__(self, term:str, line:int) -> None:
@@ -330,42 +377,93 @@ def exprConvert(inp:str) -> tuple[int, list]:
         for dfa in EXPRESSIONS.values(): dfa.begin()
     resetAll()
 
-    def process(ch, l):
-        line = l
-        active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
-        accept = [(key, dfa) for key, dfa in active if dfa.isAccepted()]
-        #print(f'{ord(ch)}: ')
-        if len(active) == 0:
-            # Syntax error
-            return True, line
-        elif len(accept) == 1:
-            # Sisa 1 DFA aktif, convert
-            key, dfa = accept[0]
-            for _, dfa in active:
-                dfa.step(ch)
-
-            active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
-            #activeKeys = [key for key, _ in active]
-            #acceptKeys = [key for key, _ in accept]
-            #print(f'{activeKeys} {acceptKeys}')
-            if not dfa.isActive() and len(active) == 0:
-                #print(f'Adding {key} to result')
-                node = Node(key, line)
-                result.append(node)
-
-                resetAll()
-                active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
-                for _, dfa in active: dfa.step(ch)
+    def process(string:str, startIdx:int) -> tuple[bool, tuple[str, int]]:
+        maxLen:dict[str, tuple[bool, int]] = {key: (False, 0) for key, _ in EXPRESSIONS.items()}
+        for key, dfa in EXPRESSIONS.items():
+            dfa.begin()
+            i = startIdx
+            while i < len(string) and dfa.isActive():
+                #print(f'{string[i]} -> {key}')
+                accepted = dfa.isAccepted()
+                dfa.step(string[i])
+                if dfa.isActive():
+                    if i == len(string) - 1:
+                        maxLen[key] = (dfa.isAccepted(), maxLen[key][1] + 1)
+                        break
+                    else:
+                        maxLen[key] = (maxLen[key][0], maxLen[key][1] + 1)
+                else:
+                    maxLen[key] = (accepted, maxLen[key][1])
+                    break
+                i += 1
+        max = (None, 0)
+        maxID = (None, 0)
+        for key, num in maxLen.items():
+            #print(f'{key} consumed {num}')
+            if key != "'ID'" and num[0] and max[1] < num[1]:
+                max = (key, num[1])
+            elif key == "'ID'":
+                maxID = (key, num[1])
+        if maxID[0] == None:
+            return True, (None, 0)
         else:
-            # Sisa banyak DFA aktif, langkah
-            for _, dfa in active:
-                dfa.step(ch)
-        if ch == '\n': line += 1
-        return False, line
+            return (False, maxID) if maxID[1] > max[1] else (False, max)
+            #return (False, max) if max[0] != None else (False, maxID)
+        
 
-    for ch in inp:
-        err, line = process(ch, line)
-        if err: break
-    if not err: err, line = process(inp[len(inp)-1], line)
+    #def process(ch, l, lastChar):
+    #    line = l
+    #    active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+    #    accept = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isAccepted()]
+    #    #print(f'{ord(ch)}: ')
+    #    if len(active) == 0:
+    #        # Syntax error
+    #        return True, line
+    #    elif len(accept) == 1:
+    #        # Sisa 1 DFA aktif, convert
+    #        key, dfa = accept[0]
+    #        for _, dfa in active:
+    #            dfa.step(ch)
+    #
+    #        active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+    #        #activeKeys = [key for key, _ in active]
+    #        #acceptKeys = [key for key, _ in accept]
+    #        #print(f'{activeKeys} {acceptKeys}')
+    #        if (lastChar and len(accept) == 1) or (not dfa.isActive() and len(active) == 0):
+    #            #print(f'Adding {key} to result')
+    #            node = Node(key, line // 2 + 1)
+    #            result.append(node)
+    #
+    #            resetAll()
+    #            active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+    #            for _, dfa in active: dfa.step(ch)
+    #    else:
+    #        # Sisa banyak DFA aktif, langkah
+    #        for _, dfa in active:
+    #            dfa.step(ch)
+    #    if ch == '\n': line += 1
+    #    return False, line
+
+    #for ch in inp:
+    #    err, line = process(ch, line, False)
+    #    if err: break
+    #if len(inp) > 0 and not err: err, line = process(inp[len(inp)-1], line, True)
+
+    i = 0
+    while i < len(inp):
+        #print(f'{i}/{len(inp)-1}: {inp[i]}')
+        #print(f'{i}/{len(inp)}')
+        err, node = process(inp, i)
+        #print(err, node)
+        #print(err, node)
+        if err: return (line, result)
+        jump = node[1]
+        while jump > 0:
+            i += 1
+            jump -= 1
+            if i >= len(inp): break
+            if inp[i] == '\n': line += 1
+        node = Node(node[0], line)
+        result.append(node)
     
-    return (0, result) if not err else (line, result)
+    return (0, result)

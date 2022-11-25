@@ -41,15 +41,15 @@ class CYK:
                 #            for right in rule:
                 #                if len(right) == 2 and right[0] in Table[i][count] and right[1] in Table[count][j]:
                 #                    Table[i][j].add(left)
-            for i in range(n):
-                for j in range(n):
-                    toWrite = str(Table[i][j] if len(Table[i][j]) > 0 else '{}')
-                    print(toWrite + ' ' * (32 - len(toWrite)), end='')
-                print()
+            #for i in range(n):
+            #    for j in range(n):
+            #        toWrite = str(Table[i][j] if len(Table[i][j]) > 0 else '{}')
+            #        print(toWrite + ' ' * (32 - len(toWrite)), end='')
+            #    print()
 
-            print(Table[0][n-1])
-            if len(Table[0][n-1]) != 0:
-            #if self._cfg._start in Table[0][n-1]:
+            #print(Table[0][n-1])
+            #if len(Table[0][n-1]) != 0:
+            if self._cfg._start in Table[0][n-1]:
                 print("Accepted")
             else:
                 print("Syntax error")
