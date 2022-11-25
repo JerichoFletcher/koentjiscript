@@ -1,1 +1,2 @@
-let yey = 0
+function do_something(x) 
+{return 0;}

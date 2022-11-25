@@ -15,7 +15,8 @@
 * [Program Structures](#program-structures)
 
 ## General Information
-
+- Program ini adalah program yang menerima input sebuah file javascript dan memeriksa apakah syntax sudah valid atau tidak
+- Program ini dibuat dengan memanfaatkan algoritma CYK (Cocke-Young-Kasami)
 
 ## Technologies Used
 Python 3.9.6
@@ -24,15 +25,12 @@ Python 3.9.6
 Fitur dalam aplikasi ini adalah:
 - Fitur parser javascript
 
-## Screenshots
-
-
 ## Setup
 Prerequirement
 - Python: https://www.python.org/downloads/
 
 ## Usage
-
+`py koentjiscript.py <file javascript>`
 
 ## Status Project
 Project is: currently worked on
@@ -52,8 +50,20 @@ Project is: currently worked on
 ```
 |-  README.md
 |-  .gitignore
-|
-|- src
+|- koentjiparse
+|     |- parser.py
+|     |- __init__.py
+|- koentjiuti
+|     |- __init__.py
+|     |- cfg.py
+|     |- cyk.py
+|     |- dfa.py
+|     |- expr.py
+|     |- util_dict.py
+|- __init__.py
+|- cfg.txt
+|- koentjiscript.py
+|- test1.js
 
 ```
 
