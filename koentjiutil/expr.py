@@ -242,7 +242,7 @@ dfaSTR.acceptLiteral('str')
 
 # ARR
 dfaARR = DFA()
-dfaSTR.acceptLiteral('arr')
+dfaARR.acceptLiteral('arr')
 
 EXPRESSIONS = {
     "'IF'": dfaIF,
