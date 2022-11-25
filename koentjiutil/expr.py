@@ -1,7 +1,11 @@
 from koentjiutil.dfa import *
 
-alphabet = [chr(c) for c in range(ord('a'), ord('z')+1)] + [chr(C) for C in range(ord('A'), ord('Z')+1)]
-numeric = [chr(c) for c in range(ord('0'), ord('9')+1)]
+any = ''.join([chr(c) for c in range(0, 256)])
+any_nosinglequote = ''.join([c for c in any if c != "'"])
+any_nodoublequote = ''.join([c for c in any if c != '"'])
+
+alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+numeric = '0123456789'
 sign = '+-' 
 ops = '+-*/'
 blank = ' '
@@ -27,6 +31,16 @@ dfaCloseBracket = DFA()
 dfaCloseBracket.acceptLiteral('}')
 dfaCloseBracket.ignore(' ')
 
+# [
+dfaOpenBrace = DFA()
+dfaOpenBrace.acceptLiteral('[')
+dfaOpenBrace.ignore(' ')
+
+# ]
+dfaCloseBrace = DFA()
+dfaCloseBrace.acceptLiteral(']')
+dfaCloseBrace.ignore(' ')
+
 # ?
 dfaQuestion = DFA()
 dfaQuestion.acceptLiteral('?')
@@ -37,37 +51,43 @@ dfaColon = DFA()
 dfaColon.acceptLiteral(':')
 dfaColon.ignore(' ')
 
+# .
+dfaDot = DFA()
+dfaDot.acceptLiteral('.')
+dfaDot.ignore(' ')
+
 # ,
 dfaComma = DFA()
 dfaComma.acceptLiteral(',')
 dfaComma.ignore(' ')
 
-# DFA for operation
-dfaOpr = DFA()
-dfaOpr.start('q0')
-dfaOpr.accept('q1','q2','q7','q8')
-dfaOpr.transitions('q0', (alphabet,'q1'),(blank,'q0'),(numeric,'q2'))
-dfaOpr.transitions('q1', (alphabet,'q1'), (numeric,'q1'), (ops,'q3'), (blank,'q4'), ('=!', 'q5'),('><','q9'))
-dfaOpr.transitions('q2', (numeric,'q2'), (ops,'q3'), (blank,'q4'), ('=!','q5'), ('><','q9'))
-dfaOpr.transitions('q3', (alphabet,'q1'), (numeric,'q2'), (blank,'q3'))
-dfaOpr.transitions('q4', (blank,'q4'),('=!','q5') ,('><','q9'))
-dfaOpr.transitions('q5', ('=', 'q6'), (blank,'q5'))
-dfaOpr.transitions('q6', (alphabet,'q7'), (numeric,'q8'),(blank,'q6'))
-dfaOpr.transitions('q7', (alphabet,'q7'), (numeric,'q7'),(ops,'q11'), (blank,'q12'))
-dfaOpr.transitions('q8', (numeric,'q8'),(ops,'q11'),(blank,'q12'))
-dfaOpr.transitions('q9', ('=', 'q10'), (alphabet,'q7'), (numeric,'q8'), (blank,'q9'))
-dfaOpr.transitions('q10', (blank,'q10'), (alphabet,'q7'), (numeric,'q8'))
-dfaOpr.transitions('q11', (blank,'q11'), (alphabet,'q7'), (numeric,'q8'))
-dfaOpr.transitions('q12', (blank,'q12'), (ops,'q11'))
+#
+#  DFA for operation
+#dfaOpr = DFA()
+#dfaOpr.start('q0')
+#dfaOpr.accept('q1','q2','q7','q8')
+#dfaOpr.transitions('q0', (alphabet,'q1'),(blank,'q0'),(numeric,'q2'))
+#dfaOpr.transitions('q1', (alphabet,'q1'), (numeric,'q1'), (ops,'q3'), (blank,'q4'), ('=!', 'q5'),('><','q9'))
+#dfaOpr.transitions('q2', (numeric,'q2'), (ops,'q3'), (blank,'q4'), ('=!','q5'), ('><','q9'))
+#dfaOpr.transitions('q3', (alphabet,'q1'), (numeric,'q2'), (blank,'q3'))
+#dfaOpr.transitions('q4', (blank,'q4'),('=!','q5') ,('><','q9'))
+#dfaOpr.transitions('q5', ('=', 'q6'), (blank,'q5'))
+#dfaOpr.transitions('q6', (alphabet,'q7'), (numeric,'q8'),(blank,'q6'))
+#dfaOpr.transitions('q7', (alphabet,'q7'), (numeric,'q7'),(ops,'q11'), (blank,'q12'))
+#dfaOpr.transitions('q8', (numeric,'q8'),(ops,'q11'),(blank,'q12'))
+#dfaOpr.transitions('q9', ('=', 'q10'), (alphabet,'q7'), (numeric,'q8'), (blank,'q9'))
+#dfaOpr.transitions('q10', (blank,'q10'), (alphabet,'q7'), (numeric,'q8'))
+#dfaOpr.transitions('q11', (blank,'q11'), (alphabet,'q7'), (numeric,'q8'))
+#dfaOpr.transitions('q12', (blank,'q12'), (ops,'q11'))
 
 # Line terminator
 dfaLT = DFA()
 dfaLT.start('A')
-dfaLT.accept('B')
-dfaLT.transitions('A', (';\n', 'B'))
+dfaLT.accept('B', 'C')
+dfaLT.transitions('A', ('\n', 'B'), (';', 'C'))
 dfaLT.transitions('B', (';\n', 'B'))
-dfaLT.kstarBefore(' ')
-dfaLT.kstarAfter(' ')
+dfaLT.transitions('C', ('\n', 'B'))
+dfaLT.ignore(' ')
 
 # Assignment operators
 dfaASSIGN = DFA()
@@ -229,20 +249,26 @@ dfaID = DFA()
 dfaID.start('A')
 dfaID.accept('B')
 dfaID.transitions('A', (alphabet, 'B'))
-dfaID.transitions('B', (alphabet + numeric + ['.', '_'], 'B'))
+dfaID.transitions('B', (alphabet + numeric + '._', 'B'))
 dfaID.kstarBefore(' ')
 
 # NUM
 dfaNUM = DFA()
-dfaNUM.acceptLiteral('num')
+dfaNUM.start('A')
+dfaNUM.accept('B', 'C')
+dfaNUM.transitions('A', (numeric, 'B'), ('.', 'C'))
+dfaNUM.transitions('B', (numeric, 'B'), ('.', 'C'))
+dfaNUM.transitions('C', (numeric, 'C'))
+dfaNUM.kstarBefore(' ')
 
 # STR
 dfaSTR = DFA()
-dfaSTR.acceptLiteral('str')
-
-# ARR
-dfaARR = DFA()
-dfaARR.acceptLiteral('arr')
+dfaSTR.start('A')
+dfaSTR.start('End')
+dfaSTR.transitions('A', ("'", 'Single'), ('"', 'Double'))
+dfaSTR.transitions('Single', (any_nosinglequote, 'Single'), ("'", 'End'))
+dfaSTR.transitions('Double', (any_nodoublequote, 'Double'), ('"', 'End'))
+dfaSTR.kstarBefore(' ')
 
 EXPRESSIONS = {
     "'IF'": dfaIF,
@@ -269,13 +295,15 @@ EXPRESSIONS = {
     "'ID'": dfaID,
     "'NUM'": dfaNUM,
     "'STR'": dfaSTR,
-    "'ARR'": dfaARR,
     "'('": dfaOpenPar,
     "')'": dfaClosePar,
     "'{'": dfaOpenBracket,
     "'}'": dfaCloseBracket,
+    "'['": dfaOpenBrace,
+    "']'": dfaCloseBrace,
     "'?'": dfaQuestion,
     "':'": dfaColon,
+    #"'.'": dfaDot,
     "','": dfaComma,
     "'LT'": dfaLT,
     "'ASSIGN_OP'": dfaASSIGN,
@@ -306,8 +334,7 @@ def exprConvert(inp:str) -> tuple[int, list]:
         line = l
         active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
         accept = [(key, dfa) for key, dfa in active if dfa.isAccepted()]
-        #activeKeys = [key for key, _ in active]
-        #print(f'{ch}: {activeKeys}')
+        #print(f'{ord(ch)}: ')
         if len(active) == 0:
             # Syntax error
             return True, line
@@ -318,6 +345,9 @@ def exprConvert(inp:str) -> tuple[int, list]:
                 dfa.step(ch)
 
             active = [(key, dfa) for key, dfa in EXPRESSIONS.items() if dfa.isActive()]
+            #activeKeys = [key for key, _ in active]
+            #acceptKeys = [key for key, _ in accept]
+            #print(f'{activeKeys} {acceptKeys}')
             if not dfa.isActive() and len(active) == 0:
                 #print(f'Adding {key} to result')
                 node = Node(key, line)
@@ -338,4 +368,4 @@ def exprConvert(inp:str) -> tuple[int, list]:
         if err: break
     if not err: err, line = process(inp[len(inp)-1], line)
     
-    return 0 if not err else line, result
+    return (0, result) if not err else (line, result)

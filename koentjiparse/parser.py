@@ -11,7 +11,7 @@ def get(filename:str) -> None:
     cyk = CYK(GRAMMAR_FILE)
     with open(filename) as file:
         INPUT_LINES = file.readlines()
-    INPUT_RAW = ''.join(INPUT_LINES)
+    INPUT_RAW = '\n'.join(INPUT_LINES)
     
     errline = cyk.parse(INPUT_RAW)
     if errline == 0:

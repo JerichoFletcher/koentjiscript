@@ -4,8 +4,8 @@ from koentjiutil.util_dict import *
 class CFG:
     # Konstruktor
     def __init__(self, start:str, grammar:str) -> None:
-        self._productions = {}
-        self._start = start
+        self._productions:dict[str, list[list[str]]] = {}
+        self._start:str = start
         self.load(grammar)
         self.toCNF()
     
@@ -53,6 +53,42 @@ class CFG:
                 # Production terdiri atas 2 nonterminal atau 1 terminal
                 # Sudah valid, simpan semua production yang dihasilkan
                 dict_add_nondup(result, key, prod)
+                for new_key, new_prod in new_prods:
+                    dict_add_nondup(result, new_key, new_prod)
+        
+        k = 0
+        while k < len(list(result.keys())):
+            key = list(result.keys())[i]
+            val = result[key]
+            k += 1
+
+            new_prods = []
+            for prod in val:
+                if len(prod) == 1 and prod[0][0] != "'":
+                    # Keep track unit production untuk dihandle terakhir
+                    if not (key, prod) in unit:
+                        unit.append((key, prod))
+                    continue
+                elif len(prod) >= 2:
+                    # Cari semua terminal dalam production, ganti dengan nonterminal baru
+                    for i in range(len(prod)):
+                        x = prod[i]
+                        if x[0] == "'":
+                            new_nonterm = f'{key}{str(idx)}'
+                            prod[i] = new_nonterm
+                            new_prods.append((new_nonterm, [x]))
+                            idx += 1
+                    
+                    # Semua suku RHS dari production terdiri atas nonterminal
+                    # Jika terdapat lebih dari 2 nonterminal, gantikan 2 nonterminal pertama dengan nonterminal baru
+                    while len(prod) > 2:
+                        new_nonterm = f'{key}{str(idx)}'
+                        new_prods.append((new_nonterm, [prod[0], prod[1]]))
+                        prod = [new_nonterm] + prod[2:]
+                        idx += 1
+                
+                # Production terdiri atas 2 nonterminal atau 1 terminal
+                # Sudah valid, simpan semua production yang dihasilkan
                 for new_key, new_prod in new_prods:
                     dict_add_nondup(result, new_key, new_prod)
         
